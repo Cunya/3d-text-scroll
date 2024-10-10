@@ -1,47 +1,50 @@
-// ... imports
-
-// Create scene, camera, and renderer
+// Set up scene, camera, renderer
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Load font from local file
-const fontLoader = new THREE.FontLoader();
-fontLoader.load('helvetiker_regular.typeface.json', function (font) {
-  const geometry = new THREE.TextGeometry('Hello, World!', {
-    font: font,
-    size: 1,
-    height: 0.1,
-    curveSegments: 12,
-    bevelEnabled: true,
-    bevelThickness: 0.1,
-    bevelSize: 0.1,
-    bevelSegments: 1
+// Load words from file
+const words = `Hello
+World
+Three.js
+Animation`;
+
+const wordsArray = words.split('\n');
+
+// Create text meshes
+const loader = new THREE.FontLoader();
+loader.load('helvetiker_regular.typeface.json', function(font) {
+  const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  
+  wordsArray.forEach((word, index) => {
+    const textGeometry = new THREE.TextGeometry(word, {
+      font: font,
+      size: 1,
+      height: 0.1
+    });
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    textMesh.position.set(10 + index * 5, 0, -10);
+    scene.add(textMesh);
   });
-  const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  const textMesh = new THREE.Mesh(geometry, material);
-  scene.add(textMesh);
-
-  // Add ambient light
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-  scene.add(ambientLight);
-
-  // Position the camera and text
-  camera.position.z = 5;
-  textMesh.position.x = -2;
-
-  // Scroll animation
-  function animate() {
-    requestAnimationFrame(animate);
-    textMesh.position.x += 0.01;
-    if (textMesh.position.x > 2) {
-      textMesh.position.x = -2;
-    }
-    renderer.render(scene, camera);
-  }
-  animate();
-}, undefined, function (error) {
-  console.error('Font loading failed:', error);
 });
+
+// Animation loop
+const speed = 0.05;
+function animate() {
+  requestAnimationFrame(animate);
+  
+  scene.children.forEach(child => {
+    if (child.type === 'Mesh') {
+      child.position.x -= speed;
+      
+      if (child.position.x < -10) {
+        child.position.x = 10;
+      }
+    }
+  });
+  
+  renderer.render(scene, camera);
+}
+animate();
