@@ -39,7 +39,7 @@ function animate() {
     if (child.type === 'Mesh') {
       child.position.x -= speed;
       
-      if (child.position.x < -10) {
+      if (child.position.x < -20) { // Updated condition to allow words to fully exit the screen
         child.position.x = 10;
       }
     }
