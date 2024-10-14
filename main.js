@@ -1,7 +1,8 @@
 // Set up scene, camera, renderer
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.00001, 1000);
-camera.position.set(0, 0, 10);
+camera.position.set(0, 0, 20);
+camera.lookAt(0, 0, 0);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -42,7 +43,7 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
       height: 0.2
     });
     const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    textMesh.position.set(xPosition, -2, 0);
+    textMesh.position.set(xPosition, 0, 0);
     scene.add(textMesh);
 
     startingPositions.push(xPosition);
