@@ -16,6 +16,7 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
   const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
   
   let xPosition = 10;
+  const startingPositions = [];
   
   wordsArray.forEach((word, index) => {
     const textGeometry = new THREE.TextGeometry(word, {
@@ -27,25 +28,36 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
     textMesh.position.set(xPosition, 0, -10);
     scene.add(textMesh);
     
+    startingPositions.push(xPosition);
     xPosition += word.length;
   });
-});
 
-// Animation loop
-const speed = 0.05;
-function animate() {
-  requestAnimationFrame(animate);
-  
-  scene.children.forEach(child => {
-    if (child.type === 'Mesh') {
-      child.position.x -= speed;
-      
-      if (child.position.x < -20) { // Updated condition to allow words to fully exit the screen
-        child.position.x = 10;
+  // Animation loop
+  const speed = 0.05;
+  let allWordsExited = true;
+  function animate() {
+    requestAnimationFrame(animate);
+    
+    allWordsExited = true;
+    scene.children.forEach((child, index) => {
+      if (child.type === 'Mesh') {
+        child.position.x -= speed;
+        
+        if (child.position.x >= -20) {
+          allWordsExited = false;
+        }
       }
+    });
+    
+    if (allWordsExited) {
+      scene.children.forEach((child, index) => {
+        if (child.type === 'Mesh') {
+          child.position.x = startingPositions[index];
+        }
+      });
     }
-  });
-  
-  renderer.render(scene, camera);
-}
-animate();
+    
+    renderer.render(scene, camera);
+  }
+  animate();
+});
