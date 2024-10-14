@@ -6,17 +6,16 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 // Load words from file
-const words = `Hello
-World
-Three.js
-Animation`;
+const words = `Artificial intelligence (AI), in its broadest sense, is intelligence exhibited by machines, particularly computer systems. It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximize their chances of achieving defined goals.[1] Such machines may be called AIs.`;
 
-const wordsArray = words.split('\n');
+const wordsArray = words.split(' ');
 
 // Create text meshes
 const loader = new THREE.FontLoader();
 loader.load('helvetiker_regular.typeface.json', function(font) {
   const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  
+  let xPosition = 10;
   
   wordsArray.forEach((word, index) => {
     const textGeometry = new THREE.TextGeometry(word, {
@@ -25,8 +24,10 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
       height: 0.1
     });
     const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    textMesh.position.set(10 + index * 5, 0, -10);
+    textMesh.position.set(xPosition, 0, -10);
     scene.add(textMesh);
+    
+    xPosition += word.length;
   });
 });
 
