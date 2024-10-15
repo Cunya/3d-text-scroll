@@ -63,11 +63,17 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
     textMesh.position.set(xPosition, 0, 0);
     scene.add(textMesh);
 
+    // Log text content and position
+    console.log(`Setting word "${word}" at position ${xPosition}`);
+
     // Get actual width of text geometry
     const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
     startingPositions.push(xPosition);
     xPosition += textWidth + 1; // Add padding between words
   });
+
+  // Log starting positions
+  console.log('Starting Positions:', startingPositions);
 
   // Animation loop
   const speed = 0.05;
@@ -76,20 +82,26 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
     requestAnimationFrame(animate);
 
     allWordsExited = true;
-    scene.children.forEach((child, index) => {
+    let meshIndex = 0;
+    scene.children.forEach((child) => {
       if (child.type === 'Mesh') {
         child.position.x -= speed;
 
         if (child.position.x >= -20) {
           allWordsExited = false;
         }
+
+        meshIndex++;
       }
     });
 
     if (allWordsExited) {
-      scene.children.forEach((child, index) => {
+      meshIndex = 0;
+      scene.children.forEach((child) => {
         if (child.type === 'Mesh') {
-          child.position.x = startingPositions[index];
+          child.position.x = startingPositions[meshIndex];
+          console.log(`Resetting word ${wordsArray[meshIndex]} to position ${startingPositions[meshIndex]}. Original word: ${wordsArray[meshIndex]}, original position: ${startingPositions[meshIndex]}`);
+          meshIndex++;
         }
       });
     }
