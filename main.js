@@ -7,6 +7,14 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
+// Add spot light
+const spotLight = new THREE.SpotLight(0xffffff);
+spotLight.position.set(0, 5, 10);
+spotLight.intensity = 1;
+spotLight.angle = Math.PI / 8;
+spotLight.penumbra = 0.5;
+scene.add(spotLight);
+
 // Get reference to slider input
 const cameraDistanceSlider = document.getElementById('cameraDistanceSlider');
 
@@ -31,7 +39,7 @@ const wordsArray = words.split(' ');
 // Create text meshes
 const loader = new THREE.FontLoader();
 loader.load('helvetiker_regular.typeface.json', function(font) {
-  const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const textMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
   
   let xPosition = -10;
   const startingPositions = [];
