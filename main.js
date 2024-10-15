@@ -7,13 +7,20 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-// Add spot light
-const spotLight = new THREE.SpotLight(0xffffff);
-spotLight.position.set(0, 5, 10);
-spotLight.intensity = 1;
-spotLight.angle = Math.PI / 8;
-spotLight.penumbra = 0.5;
-scene.add(spotLight);
+
+//function to create a spotlight
+function createSpotLight(color, intensity, position, angle, penumbra) {
+  const light = new THREE.SpotLight(color, intensity);
+  light.position.set(position[0], position[1], position[2]);
+  light.angle = angle;
+  light.penumbra = penumbra;
+  return light;
+}
+
+scene.add(createSpotLight(0xffffff,1,[0, 5, 10],Math.PI / 8, 0.5));
+scene.add(createSpotLight(0x0000ff,1,[-10, 5, 10],Math.PI / 8, 0.5));
+scene.add(createSpotLight(0x0000ff,1,[10, 5, 10],Math.PI / 8, 0.5));
+
 
 // Get reference to slider input
 const cameraDistanceSlider = document.getElementById('cameraDistanceSlider');
