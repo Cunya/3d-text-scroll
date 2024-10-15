@@ -7,7 +7,6 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-
 //function to create a spotlight
 function createSpotLight(color, intensity, position, angle, penumbra) {
   const light = new THREE.SpotLight(color, intensity);
@@ -20,7 +19,6 @@ function createSpotLight(color, intensity, position, angle, penumbra) {
 scene.add(createSpotLight(0xffffff,1,[0, 5, 10],Math.PI / 8, 0.5));
 scene.add(createSpotLight(0x0000ff,1,[-10, 5, 10],Math.PI / 8, 0.5));
 scene.add(createSpotLight(0x0000ff,1,[10, 5, 10],Math.PI / 8, 0.5));
-
 
 // Get reference to slider input
 const cameraDistanceSlider = document.getElementById('cameraDistanceSlider');
@@ -48,7 +46,7 @@ const loader = new THREE.FontLoader();
 loader.load('helvetiker_regular.typeface.json', function(font) {
   const textMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
   
-  let xPosition = -10;
+  let xPosition = 20;
   const startingPositions = [];
 
   wordsArray.forEach((word, index) => {
@@ -57,12 +55,18 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
       size: 1.5,
       height: 0.2
     });
+    
+    // Compute bounding box before accessing its properties
+    textGeometry.computeBoundingBox();
+
     const textMesh = new THREE.Mesh(textGeometry, textMaterial);
     textMesh.position.set(xPosition, 0, 0);
     scene.add(textMesh);
 
+    // Get actual width of text geometry
+    const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
     startingPositions.push(xPosition);
-    xPosition += word.length * 1.5;
+    xPosition += textWidth + 1; // Add padding between words
   });
 
   // Animation loop
