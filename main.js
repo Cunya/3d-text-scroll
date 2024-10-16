@@ -30,7 +30,7 @@ const cameraZValueDisplay = document.getElementById('cameraZValue');
 function updateCameraPosition() {
   const sliderValue = cameraDistanceSlider.value;
   const logScaledValue = Math.log(sliderValue) * 5; // Adjust scaling factor as needed
-  const minDistance = 5; // Minimum allowed camera z-distance
+  const minDistance = 1; // Minimum allowed camera z-distance
   camera.position.z = Math.max(logScaledValue, minDistance);
   cameraZValueDisplay.innerText = `Camera Z: ${camera.position.z.toFixed(2)}`;
 }
@@ -55,12 +55,13 @@ loader.load('helvetiker_regular.typeface.json', function(font) {
       size: 1.5,
       height: 0.2
     });
-    
+
+    textGeometry.computeVertexNormals();    
     // Compute bounding box before accessing its properties
     textGeometry.computeBoundingBox();
 
     const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-    textMesh.position.set(xPosition, 0, 0);
+    textMesh.position.set(xPosition, 0, -10);
     scene.add(textMesh);
 
     // Log text content and position
