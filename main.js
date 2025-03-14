@@ -65,9 +65,23 @@ const centerLight = createSpotLight(0xffffff, 350, [0, 12, 15], Math.PI / 10, 0.
 const leftLight = createSpotLight(0x0066ff, 180, [-8, 12, 15], Math.PI / 10, 0.6);   // Kept the same
 const rightLight = createSpotLight(0x0066ff, 180, [8, 12, 15], Math.PI / 10, 0.6);   // Kept the same
 
+// Yellow backlight
+const yellowBackLight = createSpotLight(0xffcc00, 60, [0, 10, -15], Math.PI / 8, 0.7);
+yellowBackLight.target.position.set(0, 0, 0);  // Point at the center of the scene
+
+// Add a hair light from above to highlight the top edges of the text
+const hairLight = createSpotLight(0xffffff, 100, [0, 20, 0], Math.PI / 12, 0.5);
+// Create a custom target for the hair light to point downward
+const hairLightTarget = new THREE.Object3D();
+hairLightTarget.position.set(0, 0, 0);
+scene.add(hairLightTarget);
+hairLight.target = hairLightTarget;
+
 scene.add(centerLight);
 scene.add(leftLight);
 scene.add(rightLight);
+scene.add(yellowBackLight);
+scene.add(hairLight);  // Add the hair light to the scene
 
 // Add extremely minimal ambient light just for visibility of form
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.01);  // Reduced to 0.01 (almost none)
@@ -172,3 +186,190 @@ loader.load(
         console.error('An error occurred loading the font:', err);
     }
 );
+
+// Create a controls panel
+const controlsPanel = document.createElement('div');
+controlsPanel.id = 'controls-panel';
+controlsPanel.innerHTML = `
+  <div class="panel-header">
+    <h3>Lighting Controls</h3>
+    <button id="toggle-panel">Hide</button>
+  </div>
+  <div class="light-control">
+    <h4>Center Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="center-intensity-value">350</span></label>
+      <input type="range" id="center-intensity" min="0" max="500" value="350" step="10">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="center-color" value="#ffffff">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Left Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="left-intensity-value">180</span></label>
+      <input type="range" id="left-intensity" min="0" max="500" value="180" step="10">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="left-color" value="#0066ff">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Right Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="right-intensity-value">180</span></label>
+      <input type="range" id="right-intensity" min="0" max="500" value="180" step="10">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="right-color" value="#0066ff">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Back Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="back-intensity-value">60</span></label>
+      <input type="range" id="back-intensity" min="0" max="200" value="60" step="5">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="back-color" value="#ffcc00">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Hair Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="hair-intensity-value">100</span></label>
+      <input type="range" id="hair-intensity" min="0" max="300" value="100" step="5">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="hair-color" value="#ffffff">
+    </div>
+  </div>
+`;
+
+// Add CSS for the controls panel
+const style = document.createElement('style');
+style.textContent = `
+  #controls-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    width: 250px;
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+  #controls-panel.hidden {
+    transform: translateX(260px);
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .panel-header h3 {
+    margin: 0;
+  }
+  .light-control {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+  }
+  .light-control h4 {
+    margin: 0 0 8px 0;
+  }
+  .control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  input[type="range"] {
+    width: 60%;
+  }
+  button {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #666;
+  }
+`;
+
+document.head.appendChild(style);
+document.body.appendChild(controlsPanel);
+
+// Add event listeners for the controls
+document.addEventListener('DOMContentLoaded', () => {
+  // Toggle panel visibility
+  const toggleButton = document.getElementById('toggle-panel');
+  toggleButton.addEventListener('click', () => {
+    const panel = document.getElementById('controls-panel');
+    if (panel.classList.contains('hidden')) {
+      panel.classList.remove('hidden');
+      toggleButton.textContent = 'Hide';
+    } else {
+      panel.classList.add('hidden');
+      toggleButton.textContent = 'Show';
+    }
+  });
+
+  // Center light controls
+  document.getElementById('center-intensity').addEventListener('input', (e) => {
+    centerLight.intensity = parseFloat(e.target.value);
+    document.getElementById('center-intensity-value').textContent = e.target.value;
+  });
+  document.getElementById('center-color').addEventListener('input', (e) => {
+    centerLight.color.set(e.target.value);
+  });
+
+  // Left light controls
+  document.getElementById('left-intensity').addEventListener('input', (e) => {
+    leftLight.intensity = parseFloat(e.target.value);
+    document.getElementById('left-intensity-value').textContent = e.target.value;
+  });
+  document.getElementById('left-color').addEventListener('input', (e) => {
+    leftLight.color.set(e.target.value);
+  });
+
+  // Right light controls
+  document.getElementById('right-intensity').addEventListener('input', (e) => {
+    rightLight.intensity = parseFloat(e.target.value);
+    document.getElementById('right-intensity-value').textContent = e.target.value;
+  });
+  document.getElementById('right-color').addEventListener('input', (e) => {
+    rightLight.color.set(e.target.value);
+  });
+
+  // Back light controls
+  document.getElementById('back-intensity').addEventListener('input', (e) => {
+    yellowBackLight.intensity = parseFloat(e.target.value);
+    document.getElementById('back-intensity-value').textContent = e.target.value;
+  });
+  document.getElementById('back-color').addEventListener('input', (e) => {
+    yellowBackLight.color.set(e.target.value);
+  });
+
+  // Hair light controls
+  document.getElementById('hair-intensity').addEventListener('input', (e) => {
+    hairLight.intensity = parseFloat(e.target.value);
+    document.getElementById('hair-intensity-value').textContent = e.target.value;
+  });
+  document.getElementById('hair-color').addEventListener('input', (e) => {
+    hairLight.color.set(e.target.value);
+  });
+});
