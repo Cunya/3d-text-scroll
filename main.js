@@ -97,7 +97,7 @@ showControlsButton.id = 'show-controls-button';
 showControlsButton.textContent = 'Show Controls';
 showControlsButton.style.cssText = `
   position: fixed;
-  top: 10px;
+  top: 90px;
   right: 10px;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
@@ -114,6 +114,7 @@ document.body.appendChild(showControlsButton);
 const controlsPanel = document.createElement('div');
 controlsPanel.id = 'controls-panel';
 controlsPanel.style.display = 'none'; // Completely hide it initially
+controlsPanel.style.top = '90px'; // Position below the GitHub corner
 controlsPanel.innerHTML = `
   <div class="panel-header">
     <h3>Lighting Controls</h3>
@@ -184,7 +185,7 @@ const style = document.createElement('style');
 style.textContent = `
   #controls-panel {
     position: fixed;
-    top: 10px;
+    top: 90px;
     right: 10px;
     background-color: rgba(0, 0, 0, 0.7);
     color: white;
