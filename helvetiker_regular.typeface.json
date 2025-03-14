@@ -6,3 +6,26 @@
 //
 // For GitHub Pages, you can also use the GitHub Actions workflow
 // which should automatically download this file during deployment. 
+
+{
+  "glyphs": {},
+  "familyName": "Helvetiker",
+  "ascender": 0,
+  "descender": 0,
+  "underlinePosition": 0,
+  "underlineThickness": 0,
+  "boundingBox": { "yMin": 0, "xMin": 0, "yMax": 0, "xMax": 0 },
+  "resolution": 0,
+  "original_font_information": {
+    "format": 0,
+    "copyright": "",
+    "fontFamily": "",
+    "fontSubfamily": "",
+    "uniqueID": "",
+    "fullName": "",
+    "version": "",
+    "postScriptName": ""
+  },
+  "cssFontWeight": "normal",
+  "cssFontStyle": "normal"
+} 

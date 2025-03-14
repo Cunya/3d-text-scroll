@@ -256,12 +256,14 @@ const loader = new FontLoader();
 const fontPaths = [
   './helvetiker_regular.typeface.json',
   '/helvetiker_regular.typeface.json',
+  'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
   'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json'
 ];
 
 // Show loading indicator
 const loadingElement = document.getElementById('loading');
 const loadingProgressElement = document.getElementById('loading-progress');
+const loadingDebugElement = document.getElementById('loading-debug');
 
 // Add a timeout to show an error if the font doesn't load within 15 seconds
 const fontLoadTimeout = setTimeout(() => {
@@ -272,11 +274,17 @@ const fontLoadTimeout = setTimeout(() => {
         Trying to load directly from Three.js repository...
       </div>
       <button id="retry-button" style="display: block; margin-top: 20px;">Retry Loading</button>
+      <button id="direct-download" style="display: block; margin-top: 10px;">Download Font File</button>
     `;
     
     // Add event listener to retry button
     document.getElementById('retry-button').addEventListener('click', () => {
       window.location.reload();
+    });
+    
+    // Add event listener to direct download button
+    document.getElementById('direct-download').addEventListener('click', () => {
+      window.open('font-loader.html', '_blank');
     });
   }
 }, 15000);
@@ -289,14 +297,20 @@ function attemptFontLoad(pathIndex = 0) {
       loadingElement.innerHTML = `
         <div>Failed to load font from all sources.</div>
         <div style="font-size: 16px; margin-top: 10px;">
-          Please check your internet connection and try again.
+          Please try one of these options:
         </div>
         <button id="retry-button" style="display: block; margin-top: 20px;">Retry Loading</button>
+        <button id="direct-download" style="display: block; margin-top: 10px;">Download Font File</button>
       `;
       
       // Add event listener to retry button
       document.getElementById('retry-button').addEventListener('click', () => {
         window.location.reload();
+      });
+      
+      // Add event listener to direct download button
+      document.getElementById('direct-download').addEventListener('click', () => {
+        window.open('font-loader.html', '_blank');
       });
     }
     return;
@@ -309,37 +323,72 @@ function attemptFontLoad(pathIndex = 0) {
     loadingProgressElement.textContent = `Trying source ${pathIndex + 1}/${fontPaths.length}...`;
   }
   
-  loader.load(
-    currentPath,
-    // Success callback
-    function(font) {
-      // Clear the timeout since the font loaded successfully
-      clearTimeout(fontLoadTimeout);
-      
-      // Hide loading indicator
-      if (loadingElement) {
-        loadingElement.style.display = 'none';
+  if (loadingDebugElement) {
+    loadingDebugElement.textContent = `Debug: Loading from ${currentPath}`;
+  }
+  
+  // Use fetch API first to validate the JSON
+  fetch(currentPath)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      console.log(`Font loaded successfully from: ${currentPath}`);
-      createTextMeshes(font);
-    },
-    // Progress callback
-    function(xhr) {
-      if (loadingProgressElement && xhr.lengthComputable) {
-        const percentComplete = Math.min(100, Math.round((xhr.loaded / xhr.total) * 100));
-        loadingProgressElement.textContent = `Loading font: ${percentComplete}%`;
-      } else if (loadingProgressElement) {
-        loadingProgressElement.textContent = `Loading font...`;
+      return response.text();
+    })
+    .then(text => {
+      // Validate JSON before passing to FontLoader
+      try {
+        // Check if the text starts with comments (not valid JSON)
+        if (text.trim().startsWith('//')) {
+          throw new Error('File contains comments, not valid JSON');
+        }
+        
+        // Try to parse as JSON to validate
+        JSON.parse(text);
+        
+        // If we get here, JSON is valid, proceed with FontLoader
+        loader.load(
+          currentPath,
+          // Success callback
+          function(font) {
+            // Clear the timeout since the font loaded successfully
+            clearTimeout(fontLoadTimeout);
+            
+            // Hide loading indicator
+            if (loadingElement) {
+              loadingElement.style.display = 'none';
+            }
+            
+            console.log(`Font loaded successfully from: ${currentPath}`);
+            createTextMeshes(font);
+          },
+          // Progress callback
+          function(xhr) {
+            if (loadingProgressElement && xhr.lengthComputable) {
+              const percentComplete = Math.min(100, Math.round((xhr.loaded / xhr.total) * 100));
+              loadingProgressElement.textContent = `Loading font: ${percentComplete}%`;
+            } else if (loadingProgressElement) {
+              loadingProgressElement.textContent = `Loading font...`;
+            }
+          },
+          // Error callback
+          function(err) {
+            console.warn(`FontLoader error from ${currentPath}:`, err);
+            // Try the next path
+            attemptFontLoad(pathIndex + 1);
+          }
+        );
+      } catch (e) {
+        console.error(`Invalid JSON from ${currentPath}:`, e);
+        // Try the next path
+        attemptFontLoad(pathIndex + 1);
       }
-    },
-    // Error callback
-    function(err) {
-      console.warn(`Failed to load font from ${currentPath}:`, err);
+    })
+    .catch(error => {
+      console.warn(`Fetch error from ${currentPath}:`, error);
       // Try the next path
       attemptFontLoad(pathIndex + 1);
-    }
-  );
+    });
 }
 
 // Function to create text meshes once the font is loaded

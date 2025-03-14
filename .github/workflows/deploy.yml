@@ -27,15 +27,26 @@ jobs:
       - name: Download Font File
         run: |
           echo "Downloading font file..."
-          curl -L -o helvetiker_regular.typeface.json https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
+          # Use -s to silence progress, -S to show errors, -L to follow redirects
+          curl -s -S -L -o helvetiker_regular.typeface.json https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
+          
+          # Verify the file starts with a JSON opening brace
+          if ! grep -q "^{" helvetiker_regular.typeface.json; then
+            echo "Error: Downloaded file is not valid JSON"
+            cat helvetiker_regular.typeface.json | head -n 5
+            exit 1
+          fi
+          
           echo "Font file downloaded successfully"
-          ls -la
           file_size=$(stat -c%s helvetiker_regular.typeface.json)
           echo "Font file size: $file_size bytes"
+          
           if [ $file_size -lt 1000 ]; then
             echo "Font file is too small, likely an error occurred"
             exit 1
           fi
+          
+          echo "Font file validation passed"
       
       - name: Setup Pages
         uses: actions/configure-pages@v3
