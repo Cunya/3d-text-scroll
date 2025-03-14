@@ -27,6 +27,19 @@
       text-align: center;
       flex-direction: column;
     }
+    #loading-spinner {
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 5px solid #fff;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     #loading button {
       margin-top: 20px;
       padding: 10px 20px;
@@ -40,14 +53,26 @@
     #loading button:hover {
       background-color: #3a7db6;
     }
+    #debug-info {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
   <div id="loading">
-    Loading 3D Text...
+    <div id="loading-spinner"></div>
+    <div>Loading 3D Text...</div>
     <div id="loading-progress" style="font-size: 16px; margin-top: 10px;"></div>
     <button id="retry-button" style="display: none;">Retry Loading</button>
+    <div id="loading-debug" style="font-size: 12px; margin-top: 20px; color: rgba(255,255,255,0.5);"></div>
   </div>
+  
+  <div id="debug-info"></div>
   
   <!-- Import maps for modern browsers -->
   <script type="importmap">
@@ -66,11 +91,26 @@
   
   <!-- Fallback for font loading issues -->
   <script>
+    // Display environment info for debugging
+    const debugInfo = document.getElementById('debug-info');
+    const loadingDebug = document.getElementById('loading-debug');
+    
+    const envInfo = `
+      URL: ${window.location.href}
+      Hostname: ${window.location.hostname}
+      Path: ${window.location.pathname}
+      User Agent: ${navigator.userAgent}
+    `;
+    
+    if (debugInfo) debugInfo.textContent = envInfo;
+    if (loadingDebug) loadingDebug.textContent = `Debug: ${window.location.hostname}`;
+    
+    // Retry button functionality
     document.getElementById('retry-button').addEventListener('click', function() {
       window.location.reload();
     });
     
-    // Show retry button after 15 seconds if still loading
+    // Show retry button after 20 seconds if still loading
     setTimeout(function() {
       const loadingElement = document.getElementById('loading');
       const retryButton = document.getElementById('retry-button');
@@ -79,7 +119,7 @@
         retryButton.style.display = 'block';
         document.getElementById('loading-progress').textContent = 'Loading is taking longer than expected.';
       }
-    }, 15000);
+    }, 20000);
   </script>
 </body>
 </html>

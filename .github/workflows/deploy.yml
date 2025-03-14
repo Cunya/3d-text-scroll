@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
@@ -26,9 +26,16 @@ jobs:
       
       - name: Download Font File
         run: |
-          curl -o helvetiker_regular.typeface.json https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
+          echo "Downloading font file..."
+          curl -L -o helvetiker_regular.typeface.json https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
           echo "Font file downloaded successfully"
           ls -la
+          file_size=$(stat -c%s helvetiker_regular.typeface.json)
+          echo "Font file size: $file_size bytes"
+          if [ $file_size -lt 1000 ]; then
+            echo "Font file is too small, likely an error occurred"
+            exit 1
+          fi
       
       - name: Setup Pages
         uses: actions/configure-pages@v3

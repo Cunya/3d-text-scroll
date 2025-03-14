@@ -251,145 +251,185 @@ document.body.appendChild(controlsPanel);
 
 // Create text meshes
 const loader = new FontLoader();
-// For GitHub Pages, we need to use the full path to the font
-const fontUrl = window.location.hostname.includes('github.io') 
-    ? './helvetiker_regular.typeface.json' 
-    : '/helvetiker_regular.typeface.json';
+
+// Try multiple font paths to increase chances of success
+const fontPaths = [
+  './helvetiker_regular.typeface.json',
+  '/helvetiker_regular.typeface.json',
+  'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json'
+];
 
 // Show loading indicator
 const loadingElement = document.getElementById('loading');
+const loadingProgressElement = document.getElementById('loading-progress');
 
-// Add a timeout to show an error if the font doesn't load within 10 seconds
+// Add a timeout to show an error if the font doesn't load within 15 seconds
 const fontLoadTimeout = setTimeout(() => {
+  if (loadingElement) {
+    loadingElement.innerHTML = `
+      Font loading timed out.<br>
+      <div style="font-size: 16px; margin-top: 10px;">
+        Trying to load directly from Three.js repository...
+      </div>
+      <button id="retry-button" style="display: block; margin-top: 20px;">Retry Loading</button>
+    `;
+    
+    // Add event listener to retry button
+    document.getElementById('retry-button').addEventListener('click', () => {
+      window.location.reload();
+    });
+  }
+}, 15000);
+
+// Function to attempt loading the font from different sources
+function attemptFontLoad(pathIndex = 0) {
+  if (pathIndex >= fontPaths.length) {
+    console.error('All font loading attempts failed');
     if (loadingElement) {
-        loadingElement.innerHTML = 'Font loading timed out.<br>Please check the console for errors or try refreshing.';
+      loadingElement.innerHTML = `
+        <div>Failed to load font from all sources.</div>
+        <div style="font-size: 16px; margin-top: 10px;">
+          Please check your internet connection and try again.
+        </div>
+        <button id="retry-button" style="display: block; margin-top: 20px;">Retry Loading</button>
+      `;
+      
+      // Add event listener to retry button
+      document.getElementById('retry-button').addEventListener('click', () => {
+        window.location.reload();
+      });
     }
-}, 10000);
-
-loader.load(
-    fontUrl,
+    return;
+  }
+  
+  const currentPath = fontPaths[pathIndex];
+  console.log(`Attempting to load font from: ${currentPath}`);
+  
+  if (loadingProgressElement) {
+    loadingProgressElement.textContent = `Trying source ${pathIndex + 1}/${fontPaths.length}...`;
+  }
+  
+  loader.load(
+    currentPath,
+    // Success callback
     function(font) {
-        // Clear the timeout since the font loaded successfully
-        clearTimeout(fontLoadTimeout);
-        
-        // Hide loading indicator
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
-        }
-        
-        let xPosition = 20;
-        const startingPositions = [];
-
-        // Update text material for better contrast
-        const textMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0xffffff,
-            specular: 0xaaaaaa,
-            shininess: 70,       // Increased shininess for more defined highlights
-            emissive: 0x000000,  // No emission
-            flatShading: false
-        });
-
-        wordsArray.forEach((word, index) => {
-            const textGeometry = new TextGeometry(word, {
-                font: font,
-                size: 1.5,
-                height: 0.3,
-                curveSegments: 8,
-                bevelEnabled: true,
-                bevelThickness: 0.01,
-                bevelSize: 0.01,
-                bevelOffset: 0,
-                bevelSegments: 2
-            });
-
-            textGeometry.computeBoundingBox();
-            textGeometry.computeVertexNormals();
-
-            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-            textMesh.position.set(xPosition, 0, 0);
-            scene.add(textMesh);
-
-            const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
-            startingPositions.push(xPosition);
-            
-            // Reduce the gap between words to 2/3 of its current size
-            // Current gap is 1.5, so 2/3 of that is 1.0
-            xPosition += textWidth + 1.0;  // Changed from 1.5 to 1.0
-        });
-
-        // Animation loop
-        const speed = 0.1 * (2/3);  // Reduced to 2/3 of original speed (0.0667)
-        let allWordsExited = true;
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.screenSpacePanning = false;
-        controls.minDistance = 10;
-        controls.maxDistance = 100;
-        controls.maxPolarAngle = Math.PI / 2;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-
-            allWordsExited = true;
-            let meshIndex = 0;
-            scene.children.forEach((child) => {
-                if (child instanceof THREE.Mesh && child.geometry instanceof TextGeometry) {
-                    child.position.x -= speed;
-
-                    if (child.position.x > -50) {
-                        allWordsExited = false;
-                    }
-
-                    meshIndex++;
-                }
-            });
-
-            if (allWordsExited) {
-                meshIndex = 0;
-                scene.children.forEach((child) => {
-                    if (child instanceof THREE.Mesh && child.geometry instanceof TextGeometry) {
-                        child.position.x = startingPositions[meshIndex];
-                        meshIndex++;
-                    }
-                });
-            }
-
-            renderer.render(scene, camera);
-        }
-        animate();
+      // Clear the timeout since the font loaded successfully
+      clearTimeout(fontLoadTimeout);
+      
+      // Hide loading indicator
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+      
+      console.log(`Font loaded successfully from: ${currentPath}`);
+      createTextMeshes(font);
     },
     // Progress callback
     function(xhr) {
-        if (loadingElement) {
-            loadingElement.textContent = `Loading font: ${Math.round((xhr.loaded / xhr.total) * 100)}%`;
-        }
+      if (loadingProgressElement && xhr.lengthComputable) {
+        const percentComplete = Math.min(100, Math.round((xhr.loaded / xhr.total) * 100));
+        loadingProgressElement.textContent = `Loading font: ${percentComplete}%`;
+      } else if (loadingProgressElement) {
+        loadingProgressElement.textContent = `Loading font...`;
+      }
     },
     // Error callback
     function(err) {
-        console.error('An error happened while loading the font:', err);
-        if (loadingElement) {
-            loadingElement.innerHTML = `
-                Error loading font.<br>
-                <div style="font-size: 16px; margin-top: 10px;">
-                    Please try the following:
-                    <ol style="text-align: left; margin-top: 10px;">
-                        <li>Check if the font file exists at: ${fontUrl}</li>
-                        <li>Try refreshing the page</li>
-                        <li>If using GitHub Pages, make sure the repository name is correct in the URL path</li>
-                    </ol>
-                </div>
-            `;
-            
-            // Show retry button
-            const retryButton = document.getElementById('retry-button');
-            if (retryButton) {
-                retryButton.style.display = 'block';
-            }
-        }
+      console.warn(`Failed to load font from ${currentPath}:`, err);
+      // Try the next path
+      attemptFontLoad(pathIndex + 1);
     }
-);
+  );
+}
+
+// Function to create text meshes once the font is loaded
+function createTextMeshes(font) {
+  let xPosition = 20;
+  const startingPositions = [];
+
+  // Update text material for better contrast
+  const textMaterial = new THREE.MeshPhongMaterial({ 
+    color: 0xffffff,
+    specular: 0xaaaaaa,
+    shininess: 70,       // Increased shininess for more defined highlights
+    emissive: 0x000000,  // No emission
+    flatShading: false
+  });
+
+  wordsArray.forEach((word, index) => {
+    const textGeometry = new TextGeometry(word, {
+      font: font,
+      size: 1.5,
+      height: 0.3,
+      curveSegments: 8,
+      bevelEnabled: true,
+      bevelThickness: 0.01,
+      bevelSize: 0.01,
+      bevelOffset: 0,
+      bevelSegments: 2
+    });
+
+    textGeometry.computeBoundingBox();
+    textGeometry.computeVertexNormals();
+
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    textMesh.position.set(xPosition, 0, 0);
+    scene.add(textMesh);
+
+    const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
+    startingPositions.push(xPosition);
+    
+    // Reduce the gap between words to 2/3 of its current size
+    // Current gap is 1.5, so 2/3 of that is 1.0
+    xPosition += textWidth + 1.0;  // Changed from 1.5 to 1.0
+  });
+
+  // Animation loop
+  const speed = 0.1 * (2/3);  // Reduced to 2/3 of original speed (0.0667)
+  let allWordsExited = true;
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.screenSpacePanning = false;
+  controls.minDistance = 10;
+  controls.maxDistance = 100;
+  controls.maxPolarAngle = Math.PI / 2;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+
+    allWordsExited = true;
+    let meshIndex = 0;
+    scene.children.forEach((child) => {
+      if (child instanceof THREE.Mesh && child.geometry instanceof TextGeometry) {
+        child.position.x -= speed;
+
+        if (child.position.x > -50) {
+          allWordsExited = false;
+        }
+
+        meshIndex++;
+      }
+    });
+
+    if (allWordsExited) {
+      meshIndex = 0;
+      scene.children.forEach((child) => {
+        if (child instanceof THREE.Mesh && child.geometry instanceof TextGeometry) {
+          child.position.x = startingPositions[meshIndex];
+          meshIndex++;
+        }
+      });
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+
+// Start the font loading process
+attemptFontLoad();
 
 // Add event listeners for the controls
 document.addEventListener('DOMContentLoaded', () => {
