@@ -11,10 +11,9 @@ scene.background = new THREE.Color(0x000000); // Set scene background to pure bl
 const camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 // Calculate new camera position
-// Original position: (0, 5, 30)
-// 15% further: z = 30 * 1.15 = 34.5
-// 20 degrees up from current position
-const cameraDistance = 30 * 1.15; // 15% further
+// Previous position was 30 * 1.15 * 0.9 = 31.05
+// Now we want another 10% closer: 31.05 * 0.9 = 27.945
+const cameraDistance = 30 * 1.15 * 0.9 * 0.9; // 15% further, then 10% closer, then another 10% closer
 const cameraHeight = 5 + (cameraDistance * Math.sin(20 * Math.PI / 180)); // Calculate y position based on angle
 
 camera.position.set(0, cameraHeight, cameraDistance);
@@ -74,20 +73,7 @@ scene.add(rightLight);
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.01);  // Reduced to 0.01 (almost none)
 scene.add(ambientLight);
 
-// Get reference to slider input
-const cameraDistanceSlider = document.getElementById('cameraDistanceSlider');
-const cameraZValueDisplay = document.getElementById('cameraZValue');
-
-function updateCameraPosition() {
-  const sliderValue = cameraDistanceSlider.value;
-  const logScaledValue = Math.log(sliderValue) * 5;
-  const minDistance = 1;
-  camera.position.z = Math.max(logScaledValue, minDistance);
-  cameraZValueDisplay.innerText = `Camera Z: ${camera.position.z.toFixed(2)}`;
-}
-cameraDistanceSlider.addEventListener('input', updateCameraPosition);
-
-const scrollText = `Artificial intelligence (AI), in its broadest sense, is intelligence exhibited by machines, particularly computer systems. It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximize their chances of achieving defined goals.[1] Such machines may be called AIs.`;
+const scrollText = `Artificial intelligence (AI), in its broadest sense, is intelligence exhibited by machines, particularly computer systems. It is a field of research in computer science that develops and studies methods and software that enable machines to perceive their environment and use learning and intelligence to take actions that maximize their chances of achieving defined goals. Such machines may be called AIs.`;
 
 const wordsArray = scrollText.split(' ');
 
@@ -130,7 +116,10 @@ loader.load(
 
             const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
             startingPositions.push(xPosition);
-            xPosition += textWidth + 1.5;
+            
+            // Reduce the gap between words to 2/3 of its current size
+            // Current gap is 1.5, so 2/3 of that is 1.0
+            xPosition += textWidth + 1.0;  // Changed from 1.5 to 1.0
         });
 
         // Animation loop
