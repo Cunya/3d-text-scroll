@@ -1,15 +1,16 @@
 {
   "name": "3d-text-scroll",
   "version": "1.0.0",
-  "description": "A 3D text scrolling app using Three.js",
-  "main": "index.html",
+  "type": "module",
   "scripts": {
-    "start": "http-server"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "three": "^0.125.2"
+    "three": "^0.157.0"
   },
   "devDependencies": {
-    "http-server": "^0.12.3"
+    "vite": "^4.5.0"
   }
 }
