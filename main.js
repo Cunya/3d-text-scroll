@@ -61,7 +61,7 @@ function createSpotLight(color, intensity, position, angle, penumbra) {
 }
 
 // Create new lights with better focus and blue lights closer to white
-const centerLight = createSpotLight(0xffffff, 350, [0, 12, 15], Math.PI / 10, 0.6);  // Increased from 250 to 350
+const centerLight = createSpotLight(0xffffff, 275, [0, 12, 15], Math.PI / 10, 0.6);  // Increased from 250 to 350
 const leftLight = createSpotLight(0x0066ff, 180, [-8, 12, 15], Math.PI / 10, 0.6);   // Kept the same
 const rightLight = createSpotLight(0x0066ff, 180, [8, 12, 15], Math.PI / 10, 0.6);   // Kept the same
 
@@ -187,13 +187,33 @@ loader.load(
     }
 );
 
-// Create a controls panel
+// Create a small button to show controls
+const showControlsButton = document.createElement('button');
+showControlsButton.id = 'show-controls-button';
+showControlsButton.textContent = 'Show Controls';
+showControlsButton.style.cssText = `
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1001;
+  font-family: Arial, sans-serif;
+`;
+document.body.appendChild(showControlsButton);
+
+// Create a controls panel (completely hidden initially)
 const controlsPanel = document.createElement('div');
 controlsPanel.id = 'controls-panel';
+controlsPanel.style.display = 'none'; // Completely hide it initially
 controlsPanel.innerHTML = `
   <div class="panel-header">
     <h3>Lighting Controls</h3>
-    <button id="toggle-panel">Hide</button>
+    <button id="hide-controls-button">Hide</button>
   </div>
   <div class="light-control">
     <h4>Center Light</h4>
@@ -250,6 +270,9 @@ controlsPanel.innerHTML = `
       <input type="color" id="hair-color" value="#ffffff">
     </div>
   </div>
+  <div class="save-settings">
+    <button id="save-settings">Save Settings to Console</button>
+  </div>
 `;
 
 // Add CSS for the controls panel
@@ -266,10 +289,6 @@ style.textContent = `
     width: 250px;
     font-family: Arial, sans-serif;
     z-index: 1000;
-    transition: transform 0.3s ease;
-  }
-  #controls-panel.hidden {
-    transform: translateX(260px);
   }
   .panel-header {
     display: flex;
@@ -308,6 +327,18 @@ style.textContent = `
   button:hover {
     background-color: #666;
   }
+  .save-settings {
+    margin-top: 15px;
+    text-align: center;
+  }
+  #save-settings {
+    background-color: #2a6496;
+    padding: 8px 15px;
+    width: 100%;
+  }
+  #save-settings:hover {
+    background-color: #3a7db6;
+  }
 `;
 
 document.head.appendChild(style);
@@ -315,17 +346,16 @@ document.body.appendChild(controlsPanel);
 
 // Add event listeners for the controls
 document.addEventListener('DOMContentLoaded', () => {
-  // Toggle panel visibility
-  const toggleButton = document.getElementById('toggle-panel');
-  toggleButton.addEventListener('click', () => {
-    const panel = document.getElementById('controls-panel');
-    if (panel.classList.contains('hidden')) {
-      panel.classList.remove('hidden');
-      toggleButton.textContent = 'Hide';
-    } else {
-      panel.classList.add('hidden');
-      toggleButton.textContent = 'Show';
-    }
+  // Show controls button
+  document.getElementById('show-controls-button').addEventListener('click', () => {
+    document.getElementById('controls-panel').style.display = 'block';
+    document.getElementById('show-controls-button').style.display = 'none';
+  });
+  
+  // Hide controls button
+  document.getElementById('hide-controls-button').addEventListener('click', () => {
+    document.getElementById('controls-panel').style.display = 'none';
+    document.getElementById('show-controls-button').style.display = 'block';
   });
 
   // Center light controls
@@ -371,5 +401,59 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.getElementById('hair-color').addEventListener('input', (e) => {
     hairLight.color.set(e.target.value);
+  });
+
+  // Add save settings button functionality
+  document.getElementById('save-settings').addEventListener('click', () => {
+    const settings = {
+      centerLight: {
+        color: centerLight.color.getHexString(),
+        intensity: centerLight.intensity,
+        position: [centerLight.position.x, centerLight.position.y, centerLight.position.z],
+        angle: centerLight.angle,
+        penumbra: centerLight.penumbra
+      },
+      leftLight: {
+        color: leftLight.color.getHexString(),
+        intensity: leftLight.intensity,
+        position: [leftLight.position.x, leftLight.position.y, leftLight.position.z],
+        angle: leftLight.angle,
+        penumbra: leftLight.penumbra
+      },
+      rightLight: {
+        color: rightLight.color.getHexString(),
+        intensity: rightLight.intensity,
+        position: [rightLight.position.x, rightLight.position.y, rightLight.position.z],
+        angle: rightLight.angle,
+        penumbra: rightLight.penumbra
+      },
+      backLight: {
+        color: yellowBackLight.color.getHexString(),
+        intensity: yellowBackLight.intensity,
+        position: [yellowBackLight.position.x, yellowBackLight.position.y, yellowBackLight.position.z],
+        angle: yellowBackLight.angle,
+        penumbra: yellowBackLight.penumbra
+      },
+      hairLight: {
+        color: hairLight.color.getHexString(),
+        intensity: hairLight.intensity,
+        position: [hairLight.position.x, hairLight.position.y, hairLight.position.z],
+        angle: hairLight.angle,
+        penumbra: hairLight.penumbra
+      }
+    };
+    
+    console.log('Current Light Settings:');
+    console.log(JSON.stringify(settings, null, 2));
+    
+    // Also output code that can be directly copied into the source
+    console.log('\nCopy-paste code for main.js:');
+    console.log(`const centerLight = createSpotLight(0x${settings.centerLight.color}, ${settings.centerLight.intensity}, [${settings.centerLight.position.join(', ')}], ${settings.centerLight.angle}, ${settings.centerLight.penumbra});`);
+    console.log(`const leftLight = createSpotLight(0x${settings.leftLight.color}, ${settings.leftLight.intensity}, [${settings.leftLight.position.join(', ')}], ${settings.leftLight.angle}, ${settings.leftLight.penumbra});`);
+    console.log(`const rightLight = createSpotLight(0x${settings.rightLight.color}, ${settings.rightLight.intensity}, [${settings.rightLight.position.join(', ')}], ${settings.rightLight.angle}, ${settings.rightLight.penumbra});`);
+    console.log(`const yellowBackLight = createSpotLight(0x${settings.backLight.color}, ${settings.backLight.intensity}, [${settings.backLight.position.join(', ')}], ${settings.backLight.angle}, ${settings.backLight.penumbra});`);
+    console.log(`const hairLight = createSpotLight(0x${settings.hairLight.color}, ${settings.hairLight.intensity}, [${settings.hairLight.position.join(', ')}], ${settings.hairLight.angle}, ${settings.hairLight.penumbra});`);
+    
+    alert('Settings saved to console! Press F12 to view.');
   });
 });
