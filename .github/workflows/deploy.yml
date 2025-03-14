@@ -26,8 +26,9 @@ jobs:
       
       - name: Download Font File
         run: |
-          mkdir -p fonts
           curl -o helvetiker_regular.typeface.json https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
+          echo "Font file downloaded successfully"
+          ls -la
       
       - name: Setup Pages
         uses: actions/configure-pages@v3

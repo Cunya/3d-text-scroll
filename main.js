@@ -252,16 +252,26 @@ document.body.appendChild(controlsPanel);
 // Create text meshes
 const loader = new FontLoader();
 // For GitHub Pages, we need to use the full path to the font
-const fontUrl = window.location.href.includes('github.io') 
-    ? '/3d-text-scroll/helvetiker_regular.typeface.json' 
+const fontUrl = window.location.hostname.includes('github.io') 
+    ? './helvetiker_regular.typeface.json' 
     : '/helvetiker_regular.typeface.json';
 
 // Show loading indicator
 const loadingElement = document.getElementById('loading');
 
+// Add a timeout to show an error if the font doesn't load within 10 seconds
+const fontLoadTimeout = setTimeout(() => {
+    if (loadingElement) {
+        loadingElement.innerHTML = 'Font loading timed out.<br>Please check the console for errors or try refreshing.';
+    }
+}, 10000);
+
 loader.load(
     fontUrl,
     function(font) {
+        // Clear the timeout since the font loaded successfully
+        clearTimeout(fontLoadTimeout);
+        
         // Hide loading indicator
         if (loadingElement) {
             loadingElement.style.display = 'none';
@@ -360,7 +370,23 @@ loader.load(
     function(err) {
         console.error('An error happened while loading the font:', err);
         if (loadingElement) {
-            loadingElement.textContent = 'Error loading font. Please check console.';
+            loadingElement.innerHTML = `
+                Error loading font.<br>
+                <div style="font-size: 16px; margin-top: 10px;">
+                    Please try the following:
+                    <ol style="text-align: left; margin-top: 10px;">
+                        <li>Check if the font file exists at: ${fontUrl}</li>
+                        <li>Try refreshing the page</li>
+                        <li>If using GitHub Pages, make sure the repository name is correct in the URL path</li>
+                    </ol>
+                </div>
+            `;
+            
+            // Show retry button
+            const retryButton = document.getElementById('retry-button');
+            if (retryButton) {
+                retryButton.style.display = 'block';
+            }
         }
     }
 );

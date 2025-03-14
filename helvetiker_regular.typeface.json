@@ -1,6 +1,8 @@
-// This is a placeholder file
-// You need to download the actual helvetiker_regular.typeface.json from:
-// https://github.com/mrdoob/three.js/blob/dev/examples/fonts/helvetiker_regular.typeface.json
-// 
-// For GitHub Pages to work properly, this file must be present in the root directory
-// of your repository or in the specified path in your code. 
+// This file should be replaced with the actual font file content
+// If you're seeing this message, please download the font file from:
+// https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
+//
+// Save it to this location with the same filename.
+//
+// For GitHub Pages, you can also use the GitHub Actions workflow
+// which should automatically download this file during deployment. 

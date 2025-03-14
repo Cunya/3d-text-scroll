@@ -24,11 +24,30 @@
       color: white;
       font-size: 24px;
       z-index: 9999;
+      text-align: center;
+      flex-direction: column;
+    }
+    #loading button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #2a6496;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #loading button:hover {
+      background-color: #3a7db6;
     }
   </style>
 </head>
 <body>
-  <div id="loading">Loading 3D Text...</div>
+  <div id="loading">
+    Loading 3D Text...
+    <div id="loading-progress" style="font-size: 16px; margin-top: 10px;"></div>
+    <button id="retry-button" style="display: none;">Retry Loading</button>
+  </div>
   
   <!-- Import maps for modern browsers -->
   <script type="importmap">
@@ -44,5 +63,23 @@
   
   <!-- Main script -->
   <script type="module" src="main.js"></script>
+  
+  <!-- Fallback for font loading issues -->
+  <script>
+    document.getElementById('retry-button').addEventListener('click', function() {
+      window.location.reload();
+    });
+    
+    // Show retry button after 15 seconds if still loading
+    setTimeout(function() {
+      const loadingElement = document.getElementById('loading');
+      const retryButton = document.getElementById('retry-button');
+      
+      if (loadingElement && loadingElement.style.display !== 'none') {
+        retryButton.style.display = 'block';
+        document.getElementById('loading-progress').textContent = 'Loading is taking longer than expected.';
+      }
+    }, 15000);
+  </script>
 </body>
 </html>

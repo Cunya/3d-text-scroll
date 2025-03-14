@@ -44,7 +44,12 @@ You can view the live demo [here](https://yourusername.github.io/3d-text-scroll/
    cd 3d-text-scroll
    ```
 
-3. Serve the files using a local server. You can use any of these methods:
+3. **Important**: Download the required font file:
+   ```
+   curl -o helvetiker_regular.typeface.json https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json
+   ```
+
+4. Serve the files using a local server. You can use any of these methods:
    - Using Python:
      ```
      python -m http.server
@@ -55,16 +60,36 @@ You can view the live demo [here](https://yourusername.github.io/3d-text-scroll/
      ```
    - Using VS Code's Live Server extension
 
-4. Open your browser and navigate to `http://localhost:8000` (or whatever port your server is using)
+5. Open your browser and navigate to `http://localhost:8000` (or whatever port your server is using)
 
 ## Deployment to GitHub Pages
 
 1. Push your code to a GitHub repository
 2. Go to the repository settings
-3. Scroll down to the GitHub Pages section
-4. Select the branch you want to deploy (usually `main` or `master`)
-5. Click Save
+3. Navigate to Pages > Build and deployment
+4. Select GitHub Actions as the source
+5. The GitHub Actions workflow will automatically deploy your site and download the required font file
 6. Your site will be published at `https://yourusername.github.io/3d-text-scroll/`
+
+## Troubleshooting
+
+### Font Loading Issues
+
+If you see "Loading 3D Text..." that doesn't go away, or errors related to font loading:
+
+1. **For GitHub Pages deployment**:
+   - Make sure your repository name is correctly set in the GitHub Pages URL
+   - Check that the GitHub Actions workflow ran successfully
+   - Verify that the font file exists in your repository
+
+2. **For local development**:
+   - Make sure you've downloaded the font file to the correct location
+   - Check browser console for specific error messages
+   - Try using a different local server
+
+3. **Manual fix**:
+   - Download the font file directly from [here](https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/helvetiker_regular.typeface.json)
+   - Save it to the root of your project as `helvetiker_regular.typeface.json`
 
 ## Customization
 
