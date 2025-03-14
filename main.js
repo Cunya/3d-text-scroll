@@ -91,11 +91,182 @@ const scrollText = `Artificial intelligence (AI), in its broadest sense, is inte
 
 const wordsArray = scrollText.split(' ');
 
+// Create a small button to show controls
+const showControlsButton = document.createElement('button');
+showControlsButton.id = 'show-controls-button';
+showControlsButton.textContent = 'Show Controls';
+showControlsButton.style.cssText = `
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1001;
+  font-family: Arial, sans-serif;
+`;
+document.body.appendChild(showControlsButton);
+
+// Create a controls panel (completely hidden initially)
+const controlsPanel = document.createElement('div');
+controlsPanel.id = 'controls-panel';
+controlsPanel.style.display = 'none'; // Completely hide it initially
+controlsPanel.innerHTML = `
+  <div class="panel-header">
+    <h3>Lighting Controls</h3>
+    <button id="hide-controls-button">Hide</button>
+  </div>
+  <div class="light-control">
+    <h4>Center Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="center-intensity-value">275</span></label>
+      <input type="range" id="center-intensity" min="0" max="500" value="275" step="10">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="center-color" value="#ffffff">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Left Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="left-intensity-value">180</span></label>
+      <input type="range" id="left-intensity" min="0" max="500" value="180" step="10">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="left-color" value="#0066ff">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Right Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="right-intensity-value">180</span></label>
+      <input type="range" id="right-intensity" min="0" max="500" value="180" step="10">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="right-color" value="#0066ff">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Back Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="back-intensity-value">60</span></label>
+      <input type="range" id="back-intensity" min="0" max="200" value="60" step="5">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="back-color" value="#ffcc00">
+    </div>
+  </div>
+  <div class="light-control">
+    <h4>Hair Light</h4>
+    <div class="control-row">
+      <label>Intensity: <span id="hair-intensity-value">100</span></label>
+      <input type="range" id="hair-intensity" min="0" max="300" value="100" step="5">
+    </div>
+    <div class="control-row">
+      <label>Color:</label>
+      <input type="color" id="hair-color" value="#ffffff">
+    </div>
+  </div>
+  <div class="save-settings">
+    <button id="save-settings">Save Settings to Console</button>
+  </div>
+`;
+
+// Add CSS for the controls panel
+const style = document.createElement('style');
+style.textContent = `
+  #controls-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    width: 250px;
+    font-family: Arial, sans-serif;
+    z-index: 1000;
+    border: 1px solid #444;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .panel-header h3 {
+    margin: 0;
+  }
+  .light-control {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+  }
+  .light-control h4 {
+    margin: 0 0 8px 0;
+  }
+  .control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  input[type="range"] {
+    width: 60%;
+  }
+  button {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #666;
+  }
+  .save-settings {
+    margin-top: 15px;
+    text-align: center;
+  }
+  #save-settings {
+    background-color: #2a6496;
+    padding: 8px 15px;
+    width: 100%;
+  }
+  #save-settings:hover {
+    background-color: #3a7db6;
+  }
+`;
+
+document.head.appendChild(style);
+document.body.appendChild(controlsPanel);
+
 // Create text meshes
 const loader = new FontLoader();
+// For GitHub Pages, we need to use the full path to the font
+const fontUrl = window.location.href.includes('github.io') 
+    ? '/3d-text-scroll/helvetiker_regular.typeface.json' 
+    : '/helvetiker_regular.typeface.json';
+
+// Show loading indicator
+const loadingElement = document.getElementById('loading');
+
 loader.load(
-    '/helvetiker_regular.typeface.json',
+    fontUrl,
     function(font) {
+        // Hide loading indicator
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+        
         let xPosition = 20;
         const startingPositions = [];
 
@@ -179,170 +350,20 @@ loader.load(
         }
         animate();
     },
+    // Progress callback
     function(xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        if (loadingElement) {
+            loadingElement.textContent = `Loading font: ${Math.round((xhr.loaded / xhr.total) * 100)}%`;
+        }
     },
+    // Error callback
     function(err) {
-        console.error('An error occurred loading the font:', err);
+        console.error('An error happened while loading the font:', err);
+        if (loadingElement) {
+            loadingElement.textContent = 'Error loading font. Please check console.';
+        }
     }
 );
-
-// Create a small button to show controls
-const showControlsButton = document.createElement('button');
-showControlsButton.id = 'show-controls-button';
-showControlsButton.textContent = 'Show Controls';
-showControlsButton.style.cssText = `
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  z-index: 1001;
-  font-family: Arial, sans-serif;
-`;
-document.body.appendChild(showControlsButton);
-
-// Create a controls panel (completely hidden initially)
-const controlsPanel = document.createElement('div');
-controlsPanel.id = 'controls-panel';
-controlsPanel.style.display = 'none'; // Completely hide it initially
-controlsPanel.innerHTML = `
-  <div class="panel-header">
-    <h3>Lighting Controls</h3>
-    <button id="hide-controls-button">Hide</button>
-  </div>
-  <div class="light-control">
-    <h4>Center Light</h4>
-    <div class="control-row">
-      <label>Intensity: <span id="center-intensity-value">350</span></label>
-      <input type="range" id="center-intensity" min="0" max="500" value="350" step="10">
-    </div>
-    <div class="control-row">
-      <label>Color:</label>
-      <input type="color" id="center-color" value="#ffffff">
-    </div>
-  </div>
-  <div class="light-control">
-    <h4>Left Light</h4>
-    <div class="control-row">
-      <label>Intensity: <span id="left-intensity-value">180</span></label>
-      <input type="range" id="left-intensity" min="0" max="500" value="180" step="10">
-    </div>
-    <div class="control-row">
-      <label>Color:</label>
-      <input type="color" id="left-color" value="#0066ff">
-    </div>
-  </div>
-  <div class="light-control">
-    <h4>Right Light</h4>
-    <div class="control-row">
-      <label>Intensity: <span id="right-intensity-value">180</span></label>
-      <input type="range" id="right-intensity" min="0" max="500" value="180" step="10">
-    </div>
-    <div class="control-row">
-      <label>Color:</label>
-      <input type="color" id="right-color" value="#0066ff">
-    </div>
-  </div>
-  <div class="light-control">
-    <h4>Back Light</h4>
-    <div class="control-row">
-      <label>Intensity: <span id="back-intensity-value">60</span></label>
-      <input type="range" id="back-intensity" min="0" max="200" value="60" step="5">
-    </div>
-    <div class="control-row">
-      <label>Color:</label>
-      <input type="color" id="back-color" value="#ffcc00">
-    </div>
-  </div>
-  <div class="light-control">
-    <h4>Hair Light</h4>
-    <div class="control-row">
-      <label>Intensity: <span id="hair-intensity-value">100</span></label>
-      <input type="range" id="hair-intensity" min="0" max="300" value="100" step="5">
-    </div>
-    <div class="control-row">
-      <label>Color:</label>
-      <input type="color" id="hair-color" value="#ffffff">
-    </div>
-  </div>
-  <div class="save-settings">
-    <button id="save-settings">Save Settings to Console</button>
-  </div>
-`;
-
-// Add CSS for the controls panel
-const style = document.createElement('style');
-style.textContent = `
-  #controls-panel {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 15px;
-    border-radius: 8px;
-    width: 250px;
-    font-family: Arial, sans-serif;
-    z-index: 1000;
-  }
-  .panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-  }
-  .panel-header h3 {
-    margin: 0;
-  }
-  .light-control {
-    margin-bottom: 15px;
-    border-bottom: 1px solid #444;
-    padding-bottom: 10px;
-  }
-  .light-control h4 {
-    margin: 0 0 8px 0;
-  }
-  .control-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  input[type="range"] {
-    width: 60%;
-  }
-  button {
-    background-color: #555;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #666;
-  }
-  .save-settings {
-    margin-top: 15px;
-    text-align: center;
-  }
-  #save-settings {
-    background-color: #2a6496;
-    padding: 8px 15px;
-    width: 100%;
-  }
-  #save-settings:hover {
-    background-color: #3a7db6;
-  }
-`;
-
-document.head.appendChild(style);
-document.body.appendChild(controlsPanel);
 
 // Add event listeners for the controls
 document.addEventListener('DOMContentLoaded', () => {
